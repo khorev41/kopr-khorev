@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class Searcher {
-	private static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+	private static final int THREAD_NUMBER = Runtime.getRuntime().availableProcessors();
 
 	public static List<File> search(File file) {
-		ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+		ExecutorService executor = Executors.newFixedThreadPool(THREAD_NUMBER);
 		FileSearcherTask initialTask = new FileSearcherTask(file, executor);
 		Future<List<File>> futureResult = executor.submit(initialTask);
 

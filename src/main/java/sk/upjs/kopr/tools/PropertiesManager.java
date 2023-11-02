@@ -46,10 +46,6 @@ public class PropertiesManager {
 		return this.properties.getProperty("directory");
 	}
 
-	public void setDirectory(String value) {
-		this.properties.setProperty("directory", value);
-	}
-	
 	public String getPathToSave() {
 		return this.properties.getProperty("pathToSave");
 	}

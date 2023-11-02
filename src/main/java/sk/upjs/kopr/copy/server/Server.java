@@ -14,186 +14,185 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
+import javafx.util.Pair;
 import sk.upjs.kopr.copy.FileInfo;
 import sk.upjs.kopr.tools.PropertiesManager;
 import sk.upjs.kopr.tools.Searcher;
 
 public class Server {
 
-	private final PropertiesManager props = PropertiesManager.getInstance();
-	private BlockingQueue<FileInfo> filesToSend = new LinkedBlockingQueue<>();
-	public static final int SERVER_PORT = 5000;
-	public static final int NUMBER_OF_WORKERS = Runtime.getRuntime().availableProcessors();
-	private ServerSocket serverSocket;
-	private final AtomicBoolean isRunning = new AtomicBoolean();
-	private List<Socket> sockets = new ArrayList<Socket>();
-	private int totalFiles;
-	private long totalLength;
-	private ExecutorService executor;
-	private CountDownLatch latch;
+    private final PropertiesManager props = PropertiesManager.getInstance();
 
-	public void start() {
-		System.out.println("Server is started");
-		try {
-			filesToSend = loadProgress();
-			if (filesToSend.size() > 0) {
-				filesToSend.forEach(file -> {
-					totalLength += file.size;
-				});
-				totalFiles = filesToSend.size();
-			} else {
-				startSearching(new File(props.getDirectory()));
-			}
-			System.out.println("Searching ended. Find " + totalFiles + " files");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    private ServerSocket serverSocket;
+    private final List<Socket> sockets = new ArrayList<Socket>();
 
-		try {
-			connect();
-		} finally {
-			deleteProgressFile();
-		}
-	}
+    private final AtomicBoolean isRunning = new AtomicBoolean();
 
-	public void connect() {
-		if (!isRunning()) {
-			isRunning.set(true);
-			try {
-				serverSocket = new ServerSocket(props.getPort());
+    private BlockingQueue<FileInfo> filesToSend = new LinkedBlockingQueue<>();
+    private int totalFiles;
+    private long totalLength;
 
-				managingConnection();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    private ExecutorService executor;
+    private CountDownLatch latch;
 
-	public synchronized void reconnect() {
-		isRunning.set(true);
-		executor.shutdown();
+    public void start() {
+        System.out.println("Server is started");
+        try {
+            connect();
+        } finally {
+            deleteProgressFile();
+        }
+    }
 
-		System.out.println("Waiting for reconnecting....");
+    public void connect() {
+        if (!isRunning()) {
+            isRunning.set(true);
+            try {
+                serverSocket = new ServerSocket(props.getPort());
 
-		managingConnection();
-	}
+                managingConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	private void managingConnection() {
-		try {
-			Socket managingSocket = serverSocket.accept();
-			ObjectOutputStream oos = new ObjectOutputStream(managingSocket.getOutputStream());
-			ObjectInputStream ois = new ObjectInputStream(managingSocket.getInputStream());
+    @SuppressWarnings("unchecked")
+    private void managingConnection() {
+        try {
+            Socket managingSocket = serverSocket.accept();
+            ObjectOutputStream oos = new ObjectOutputStream(managingSocket.getOutputStream());
+            ObjectInputStream ois = new ObjectInputStream(managingSocket.getInputStream());
 
-			props.setNumberOfSockets(ois.readInt());
+            props.setNumberOfSockets(ois.readInt());
 
-			String command = ois.readUTF();
-			if ("RESUME".equals(command)) {
-				filesToSend = (BlockingQueue<FileInfo>) ois.readObject();
-				new File("client_progress.obj").delete();
-				System.out.println("Prisli: " + filesToSend );
+            String command = ois.readUTF();
+            if ("RESUME".equals(command)) {
+                filesToSend = (BlockingQueue<FileInfo>) ois.readObject();
+                new File("client_progress.obj").delete();
+            } else if ("START".equals(command)) {
+                oos.writeInt(totalFiles);
+                oos.writeLong(totalLength);
+                oos.writeObject(filesToSend);
+            }
 
-			} else if ("START".equals(command)) {
-				oos.writeInt(totalFiles);
-				oos.writeLong(totalLength);
-				oos.writeObject(filesToSend);
-			}
+            connectClients();
+            sendFiles();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
-			connectClients();
-			sendFiles();
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
+    private void sendFiles() throws IOException {
+        latch = new CountDownLatch(sockets.size());
+        executor = Executors.newFixedThreadPool(sockets.size());
 
-	private void sendFiles() throws IOException {
-		int numbersOfSockets = props.getNumberOfSockets();
-		latch = new CountDownLatch(numbersOfSockets);
-		executor = Executors.newFixedThreadPool(numbersOfSockets);
+        List<Future<Integer>> futures = new ArrayList<>();
+        for (Socket socket : sockets) {
+            FileSendTask task = new FileSendTask(filesToSend, socket, latch);
+            futures.add(executor.submit(task));
+        }
 
-		List<Future<Integer>> futures = new ArrayList<>();
-		for (Socket socket : sockets) {
-			FileSendTask task = new FileSendTask(filesToSend, socket, latch);
-			futures.add(executor.submit(task));
-		}
+        try {
+            for (Future<Integer> future : futures) {
+                if (future.get() == -1) {
+                    reconnect();
+                    break;
+                }
+            }
 
-		try {
+            latch.await();
+            for (Socket socket : sockets) {
+                socket.close();
+            }
+            executor.shutdown();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
-			for (Future<Integer> future : futures) {
-				if (future.get() == -1) {
-					reconnect();
-					break;
-				}
-			}
+    }
 
-			latch.await();
-			for (Socket socket : sockets) {
-				socket.close();
-			}
-			executor.shutdown();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
+    public Pair<Integer, Long> search() {
+        try {
+            filesToSend = loadProgress();
+            if (filesToSend.size() > 0) {
+                filesToSend.forEach(file -> {
+                    totalLength += file.size;
+                });
+            } else {
+                for (File file : Searcher.search(new File(props.getDirectory()))) {
+                    totalLength += file.length();
+                    filesToSend.add(new FileInfo(file.getAbsolutePath(), 0L, file.length()));
+                }
+            }
+            totalFiles = filesToSend.size();
+            System.out.println("Searching ended. Found " + totalFiles + " files");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Pair<>(totalFiles, totalLength);
+    }
 
-	}
+    public synchronized void reconnect() {
+        isRunning.set(true);
+        executor.shutdown();
 
-	private void connectClients() throws IOException {
-		sockets.clear();
-		for (int i = 0; i < props.getNumberOfSockets(); i++) {
-			sockets.add(serverSocket.accept());
-		}
-		System.out.println("Clients connected");
-	}
+        System.out.println("Waiting for reconnecting....");
 
-	public static synchronized void saveProgress(BlockingQueue<FileInfo> files) {
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("server_progress.obj"))) {
-			oos.writeObject(files);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        managingConnection();
+    }
 
-	public static BlockingQueue<FileInfo> loadProgress() {
-		File progressFile = new File("server_progress.obj");
+    private void connectClients() throws IOException {
+        sockets.clear();
+        for (int i = 0; i < props.getNumberOfSockets(); i++) {
+            sockets.add(serverSocket.accept());
+        }
+        System.out.println("Clients connected");
+    }
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(progressFile))) {
-			BlockingQueue<FileInfo> result = (BlockingQueue<FileInfo>) ois.readObject();
-			progressFile.delete();
-			return result;
-		} catch (FileNotFoundException e) {
-			return new LinkedBlockingQueue<>();
-		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+    public static synchronized void saveProgress(BlockingQueue<FileInfo> files) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("server_progress.obj"))) {
+            oos.writeObject(files);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-		return new LinkedBlockingQueue<>();
-	}
+    public static BlockingQueue<FileInfo> loadProgress() {
+        File progressFile = new File("server_progress.obj");
 
-	public boolean isRunning() {
-		return isRunning.get();
-	}
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(progressFile))) {
+            BlockingQueue<FileInfo> result = (BlockingQueue<FileInfo>) ois.readObject();
+            progressFile.delete();
+            return result;
+        } catch (FileNotFoundException e) {
+            return new LinkedBlockingQueue<>();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-	public void setIsRunning(boolean running) {
-		isRunning.set(running);
-	}
+        return new LinkedBlockingQueue<>();
+    }
 
-	public void deleteProgressFile() {
-		File file = new File("server_progress.obj");
-		if (file.exists()) {
-			file.delete();
-		}
-	}
+    public boolean isRunning() {
+        return isRunning.get();
+    }
 
-	public void startSearching(File rootDir) throws Exception {
-		for (File file : Searcher.search(rootDir)) {
-			totalLength += file.length();
-			filesToSend.add(new FileInfo(file.getAbsolutePath(), 0L, file.length()));
-		}
-		totalFiles = filesToSend.size();
-	}
+    public void setIsRunning(boolean running) {
+        isRunning.set(running);
+    }
+
+    public void deleteProgressFile() {
+        File file = new File("server_progress.obj");
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+
 }

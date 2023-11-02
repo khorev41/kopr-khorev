@@ -59,13 +59,7 @@ public class FileSendTask implements Callable<Integer> {
 
 	}
 
-	/**
-	 * @param fileToSend
-	 * @param fileInfo
-	 * @throws IOException
-	 * @throws ClientTerminatedConnectionException
-	 */
-	private void send(File fileToSend, FileInfo fileInfo) throws IOException, ClientTerminatedConnectionException {
+	private void send(File fileToSend, FileInfo fileInfo) throws ClientTerminatedConnectionException {
 		long send = 0;
 		try (RandomAccessFile raf = new RandomAccessFile(fileToSend, "r")) {
 

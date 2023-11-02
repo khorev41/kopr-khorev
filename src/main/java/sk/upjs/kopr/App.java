@@ -20,7 +20,7 @@ public class App extends Application {
 		stage.setMinWidth(380);
 		stage.setMinHeight(300);
 		stage.setScene(scene);
-		stage.setTitle("Copy directory");
+		stage.setTitle("Multi-thread copy");
 		stage.show();
     }
 

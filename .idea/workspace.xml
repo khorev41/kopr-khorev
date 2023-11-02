@@ -4,12 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="initial commit">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/MyFileWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/MyFileWriter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FileSearcherTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FileSearcherTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/PropertiesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/PropertiesManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/Searcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/Searcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sk/upjs/kopr/main.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sk/upjs/kopr/main.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,14 +46,44 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "run.code.analysis.last.selected.profile": "pProject Default",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\khorev\IdeaProjects\kopr\src\main\resources" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Starter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="sk.upjs.kopr.Starter" />
+      <module name="kopr" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="sk.upjs.kopr.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Starter" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -55,11 +92,27 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1698700845543</updated>
-      <workItem from="1698700846802" duration="333000" />
+      <workItem from="1698700846802" duration="573000" />
+      <workItem from="1698911633642" duration="1514000" />
+      <workItem from="1698914770319" duration="2000000" />
+      <workItem from="1698916906581" duration="855000" />
+      <workItem from="1698922442642" duration="418000" />
     </task>
+    <task id="LOCAL-00001" summary="initial commit">
+      <created>1698701397006</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1698701397006</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="initial commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
   </component>
 </project>

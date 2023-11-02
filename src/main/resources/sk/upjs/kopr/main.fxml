@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -15,15 +16,15 @@
          </font>
       </Text>
       <TextField fx:id="directoryTextField" editable="false" layoutX="213.0" layoutY="33.0" prefHeight="25.0" prefWidth="343.0" />
-      <Text layoutX="43.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pocet vlakien: ">
+      <Text layoutX="43.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Počet vlákien: ">
          <font>
             <Font size="20.0" />
          </font>
       </Text>
       <TextField fx:id="numberOfThreadsTextField" layoutX="252.0" layoutY="137.0" />
-      <ProgressBar fx:id="filesSentProgressBar" layoutX="83.0" layoutY="309.0" prefHeight="18.0" prefWidth="433.0" progress="0.0" />
-      <ProgressBar fx:id="bytesSentProgressBar" layoutX="83.0" layoutY="344.0" prefHeight="18.0" prefWidth="433.0" progress="0.0" />
-      <Button fx:id="startCopyButton" layoutX="238.0" layoutY="216.0" mnemonicParsing="false" onMouseClicked="#onStartCopyButtonClick" prefHeight="51.0" prefWidth="123.0" text="Zacat kopirovanie" />
+      <ProgressBar fx:id="filesSentProgressBar" layoutX="200.0" layoutY="276.0" prefHeight="25.0" prefWidth="380.0" progress="0.0" />
+      <ProgressBar fx:id="bytesSentProgressBar" layoutX="195.0" layoutY="339.0" prefHeight="25.0" prefWidth="380.0" progress="0.0" />
+      <Button fx:id="startCopyButton" layoutX="238.0" layoutY="202.0" mnemonicParsing="false" onMouseClicked="#onStartCopyButtonClick" prefHeight="51.0" prefWidth="123.0" text="Začať kopírovanie" />
       <Text layoutX="97.0" layoutY="94.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Do adresara:" wrappingWidth="115.90846252441406">
          <font>
             <Font size="20.0" />
@@ -33,5 +34,17 @@
       <Button fx:id="browseButton" layoutX="475.0" layoutY="74.0" mnemonicParsing="false" text="browse" />
       <Button fx:id="killServerButton" layoutX="502.0" layoutY="162.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="78.0" text="Kill server" />
       <Button fx:id="killClientButton" layoutX="502.0" layoutY="203.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="78.0" text="Kill client" />
+      <Text layoutX="31.0" layoutY="359.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Odoslané MB:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Text layoutX="20.0" layoutY="296.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Odoslané súborov:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Label fx:id="filesPercentLabel" layoutX="373.0" layoutY="304.0" />
+      <Label fx:id="filesizePercentLabel" layoutX="373.0" layoutY="367.0" />
    </children>
 </AnchorPane>

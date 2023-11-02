@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MyFileWriter {
-	private static Map<File, MyFileWriter> instances = new HashMap<>();
+	private static final Map<File, MyFileWriter> instances = new HashMap<>();
 	
-	private RandomAccessFile raf;
+	private final RandomAccessFile raf;
 	
 	private MyFileWriter(File file, long fileSize) throws IOException {
 		raf = new RandomAccessFile(file,"rw");

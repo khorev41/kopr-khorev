@@ -25,7 +25,8 @@ public class FileSearcherTask implements Callable<List<File>> {
 	public List<File> call() {
 		File[] files = currentDir.listFiles();
 		if (files == null) {
-//            throw new DirectoryForbiddenException("Directory is not accessible", currentDir);
+			System.out.println("Directory " + currentDir + " is not accessible");
+			return new ArrayList<File>();
 		}
 
 		List<File> filesToReturn = new ArrayList<>();
