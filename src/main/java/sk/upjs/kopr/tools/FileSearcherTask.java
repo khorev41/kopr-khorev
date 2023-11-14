@@ -1,5 +1,7 @@
 package sk.upjs.kopr.tools;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,14 +11,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+@Slf4j
 public class FileSearcherTask implements Callable<List<File>> {
 	private final File currentDir;
 	private final ExecutorService executor;
 
 	public FileSearcherTask(final File fileToSend, ExecutorService executor) {
-		if (fileToSend == null || !fileToSend.exists()) {
-			throw new IllegalArgumentException();
-		}
 		this.currentDir = fileToSend;
 		this.executor = executor;
 	}
@@ -25,8 +25,7 @@ public class FileSearcherTask implements Callable<List<File>> {
 	public List<File> call() {
 		File[] files = currentDir.listFiles();
 		if (files == null) {
-			System.out.println("Directory " + currentDir + " is not accessible");
-			return new ArrayList<File>();
+			return new ArrayList<>();
 		}
 
 		List<File> filesToReturn = new ArrayList<>();

@@ -1,31 +1,38 @@
 package sk.upjs.kopr.controllers;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.util.Pair;
+import lombok.extern.slf4j.Slf4j;
 import sk.upjs.kopr.copy.client.Client;
-import sk.upjs.kopr.copy.server.Server;
 import sk.upjs.kopr.tools.PropertiesManager;
+import sk.upjs.kopr.tools.ThreadSafeLong;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+@Slf4j
 public class MainController {
 
     private final static PropertiesManager props = PropertiesManager.getInstance();
 
-    private final DoubleProperty totalFilesProgress = new SimpleDoubleProperty();
-    private final DoubleProperty totalSizeProgress = new SimpleDoubleProperty();
+    private final ThreadSafeLong fileCountProgressProperty = new ThreadSafeLong();
+    private final ThreadSafeLong fileSizeProgressProperty = new ThreadSafeLong();
 
-    private int totalFileCount;
-    private long totalFileSize;
+    private final ThreadSafeLong allFileCount = new ThreadSafeLong();
+    private final ThreadSafeLong allFileSize = new ThreadSafeLong();
 
-    private Server server;
-    private Client client;
+    private final BooleanProperty finishProperty = new SimpleBooleanProperty();
 
+    @FXML
+    private Label copyingFinishedLabel;
     @FXML
     private Button browseButton;
     @FXML
@@ -49,64 +56,89 @@ public class MainController {
     @FXML
     private TextField toSaveTextField;
 
+
     @FXML
     void initialize() {
-        server = new Server();
-        Pair<Integer, Long> search = server.search();
-
-        totalFileCount = search.getKey();
-        totalFileSize = search.getValue();
-
-        client = new Client(totalSizeProgress, totalFilesProgress);
-
         directoryTextField.setText(props.getDirectory());
         toSaveTextField.setText(props.getPathToSave());
         numberOfThreadsTextField.setText(Runtime.getRuntime().availableProcessors() + "");
+        if (checkFileExistence()){
+            startCopyButton.setText("Pokračovať v kopírovaní");
+        }
 
         setListeners();
     }
 
     @FXML
     void onStartCopyButtonClick(MouseEvent event) {
-        props.setNumberOfSockets(Integer.valueOf(numberOfThreadsTextField.getText()));
+        props.setNumberOfSockets(Integer.parseInt(numberOfThreadsTextField.getText()));
         props.setPathToSave(toSaveTextField.getText());
 
-        setInitialProgress();
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+
+        Runnable clientTask = new Client(fileSizeProgressProperty, fileCountProgressProperty, allFileCount, allFileSize, finishProperty);
+        executor.submit(clientTask);
+        executor.shutdown();
+        createFile();
 
 
-        Thread serverThread = new Thread(() -> {
-            server.start();
-        });
 
-        Thread clientThread = new Thread(() -> {
-            client.start();
-        });
-
-        serverThread.start();
-        clientThread.start();
-
-        startCopyButton.setText("Stop copying");
+        startCopyButton.setText("Kopirovanie beži");
     }
-
-    private void setInitialProgress() {
-        totalFilesProgress.set(0);
-        filesPercentLabel.setText(((0 / totalFileCount) * 100) + "%");
-
-        totalSizeProgress.set(0);
-        filesizePercentLabel.setText(0 / (1024 * 1024) + "/" + totalFileSize / (1024 * 1024) + " MB");
-    }
-
 
     private void setListeners() {
-        totalFilesProgress.addListener((observable, oldValue, newValue) -> {
-            filesPercentLabel.setText((int) ((newValue.doubleValue() / totalFileCount) * 100) + "%");
-            filesSentProgressBar.setProgress(newValue.doubleValue() / totalFileCount);
+
+        fileCountProgressProperty.addListener(( oldValue, newValue) -> {
+            filesPercentLabel.setText((int) (((double)newValue / allFileCount.get()) * 100) + "%");
+            filesSentProgressBar.setProgress(((double)newValue / allFileCount.get()));
         });
 
-        totalSizeProgress.addListener((observable, oldValue, newValue) -> {
-            filesizePercentLabel.setText((int) (newValue.doubleValue() / (1024 * 1024)) + "/" + totalFileSize / (1024 * 1024) + " MB");
-            bytesSentProgressBar.setProgress(newValue.doubleValue() / totalFileSize);
+        fileSizeProgressProperty.addListener(( oldValue, newValue) -> {
+            filesizePercentLabel.setText((int) ( (double) newValue / (1024 * 1024)) + "/" + allFileSize.get() / (1024 * 1024) + " MB");
+            bytesSentProgressBar.setProgress((double) newValue / allFileSize.get());
         });
+
+        allFileSize.addListener(( oldValue, newValue) -> filesizePercentLabel.setText(0 / (1024 * 1024) + "/" + (double)newValue/ (1024 * 1024) + " MB"));
+        allFileCount.addListener((oldValue, newValue) -> filesPercentLabel.setText(((0 / (double) newValue) * 100) + "%"));
+
+        finishProperty.addListener((observable, oldValue, newValue) -> {
+            deleteFile();
+            startCopyButton.setText("Začať kopírovanie");
+            startCopyButton.setDisable(true);
+            copyingFinishedLabel.setVisible(true);
+        });
+    }
+
+    public static boolean checkFileExistence() {
+        File file = new File("wasFinished.txt");
+        return file.exists();
+    }
+
+    public static void createFile() {
+        File file = new File("wasFinished.txt");
+        try {
+            if (file.createNewFile()) {
+                System.out.println("File created successfully.");
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.err.println("An error occurred while creating the file: " + e.getMessage());
+        }
+    }
+
+    public static void deleteFile() {
+        File file = new File("wasFinished.txt");
+
+        if (file.exists()) {
+            if (file.delete()) {
+                System.out.println("File deleted successfully.");
+            } else {
+                System.err.println("Unable to delete the file.");
+            }
+        } else {
+            System.err.println("File does not exist.");
+        }
     }
 
 }

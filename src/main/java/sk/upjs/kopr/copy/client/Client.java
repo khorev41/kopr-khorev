@@ -1,64 +1,53 @@
 package sk.upjs.kopr.copy.client;
 
-import java.io.*;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.*;
-
-import javafx.beans.property.DoubleProperty;
-import javafx.scene.control.ProgressBar;
+import javafx.beans.property.BooleanProperty;
+import lombok.extern.slf4j.Slf4j;
 import sk.upjs.kopr.copy.FileInfo;
 import sk.upjs.kopr.tools.FilePathChanger;
 import sk.upjs.kopr.tools.PropertiesManager;
+import sk.upjs.kopr.tools.ThreadSafeLong;
 
-public class Client {
+import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
+import static com.sun.javafx.application.PlatformImpl.runLater;
+
+@Slf4j
+public class Client implements Runnable {
 
     private final static PropertiesManager props = PropertiesManager.getInstance();
     private int numberOfSockets;
     private BlockingQueue<FileInfo> files;
-    private int totalFiles;
-    private long totalLength;
-    private DoubleProperty fileSizeProgress;
-    private DoubleProperty fileProgress;
 
-    public Client() {
+    public int totalFiles;
+    public long totalLength;
 
+    private final ThreadSafeLong fileSizeProgressProperty;
+    private final ThreadSafeLong fileCountProgressProperty;
+
+    private final ThreadSafeLong allFileCountProperty;
+    private final ThreadSafeLong allFileSizeProperty;
+    private final BooleanProperty finishProperty;
+
+    public Client(ThreadSafeLong fileSizeProgress, ThreadSafeLong fileProgress, ThreadSafeLong totalFileCount, ThreadSafeLong totalFileSize, BooleanProperty finishProperty) {
+        this.fileSizeProgressProperty = fileSizeProgress;
+        this.fileCountProgressProperty = fileProgress;
+        this.allFileCountProperty = totalFileCount;
+        this.allFileSizeProperty = totalFileSize;
+        this.finishProperty = finishProperty;
     }
 
-    public Client(DoubleProperty fileSizeProgress, DoubleProperty fileProgress) {
-        this.fileSizeProgress = fileSizeProgress;
-        this.fileProgress = fileProgress;
-    }
+    @Override
+    public void run() {
+        log.info("Client started");
+        files = loadProgress();
 
-    public void start() {
         try {
-            System.out.println("Client is started");
-
-            files = loadProgress();
-
-            Socket managingSocket = null;
-            try {
-                managingSocket = new Socket(props.getIP(), props.getPort());
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("Server is not available... Reconnecting in 1 second");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-                start();
-            }
+            Socket managingSocket = getManagingSocket();
             if (managingSocket == null) {
                 deleteProgress();
                 return;
@@ -69,14 +58,21 @@ public class Client {
 
             numberOfSockets = props.getNumberOfSockets();
             oos.writeInt(numberOfSockets);
+            oos.flush();
+
+            int allFilesCount = ois.readInt();
+            long allFileSize = ois.readLong();
+
+            runLater(() -> allFileCountProperty.set(allFilesCount));
+            runLater(() -> allFileSizeProperty.set(allFileSize));
 
             if (files.size() > 0) {
-                System.out.println("RESUME");
+                log.info("RESUME copying");
                 oos.writeUTF("RESUME");
-
                 oos.writeObject(files);
                 oos.flush();
             } else {
+                log.info("START copying");
                 oos.writeUTF("START");
                 oos.flush();
 
@@ -84,21 +80,45 @@ public class Client {
                 totalLength = ois.readLong();
                 files = (BlockingQueue<FileInfo>) ois.readObject();
 
+                runLater(() -> fileCountProgressProperty.set(allFilesCount - totalFiles));
+                runLater(() -> fileSizeProgressProperty.set(allFileSize - totalLength));
+
                 createDirectoriesAndFile(files);
             }
             new File("server_progress.obj").delete();
+            System.out.println(files);
             receiveFiles();
+            runLater(() -> finishProperty.set(true));
+        } catch (InterruptedException e) {
+            log.error("Client was interrupted");
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            log.error("Connection reset");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
-//		outputStream.close();
-//		inputStream.close();
-//		managingSocket.close();
+    private Socket getManagingSocket() {
+        Socket managingSocket = null;
+        while (true) {
+            try {
+                managingSocket = new Socket(props.getIP(), props.getPort());
+                return managingSocket;
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                log.warn("Server is not available... Reconnecting in 1 second");
+                sleep(1000);
+            }
+        }
+    }
+
+    private static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void createDirectoriesAndFile(BlockingQueue<FileInfo> files) {
@@ -126,14 +146,14 @@ public class Client {
         for (int i = 0; i < numberOfSockets; i++) {
             Socket socket = new Socket(props.getIP(), props.getPort());
             sockets.add(socket);
-            FileReceiveTask task = new FileReceiveTask(files, socket, latch, fileProgress, fileSizeProgress);
+            FileReceiveTask task = new FileReceiveTask(files, socket, latch, fileCountProgressProperty, fileSizeProgressProperty);
             futures.add(executor.submit(task));
         }
 
         try {
             for (Future<Integer> future : futures) {
                 if (future.get() == -1) {
-                    start();
+                    run();
                     executor.shutdownNow();
                     return;
                 }
@@ -148,13 +168,13 @@ public class Client {
             latch.await();
             executor.shutdown();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new InterruptedException();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
 
-    public BlockingQueue<FileInfo> loadProgress() {
+    public static synchronized BlockingQueue<FileInfo> loadProgress() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("client_progress.obj"))) {
             return (BlockingQueue<FileInfo>) ois.readObject();
         } catch (FileNotFoundException e) {
@@ -165,11 +185,20 @@ public class Client {
         return new LinkedBlockingQueue<>();
     }
 
+    public static synchronized void saveProgress(BlockingQueue<FileInfo> files) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("client_progress.obj"))) {
+            oos.writeObject(files);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void deleteProgress() {
         File file = new File("client_progress.obj");
         if (file.exists()) {
             file.delete();
         }
     }
+
 
 }
