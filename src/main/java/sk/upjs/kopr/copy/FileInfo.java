@@ -38,7 +38,7 @@ public class FileInfo implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		FileInfo other = (FileInfo) obj;
-		return Objects.equals(fileName, other.fileName) && offset == other.offset && size == other.size;
+		return Objects.equals(fileName, other.fileName) && size == other.size;
 	}
 	
 	

@@ -47,7 +47,7 @@ public class FileSendTask implements Callable<Integer> {
 
                 File fileToSend = new File(fileInfo.fileName);
                 send(fileToSend, fileInfo);
-                log.info("File + " + FilePathChanger.getLastDirectoryName(fileInfo.fileName) + " successfully sent ");
+                log.info("File " + FilePathChanger.getLastDirectoryName(fileInfo.fileName) + " successfully sent ");
 
             } catch (ClientTerminatedConnectionException | SocketException e) {
                 return -1;

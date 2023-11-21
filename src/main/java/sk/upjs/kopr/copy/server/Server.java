@@ -1,6 +1,5 @@
 package sk.upjs.kopr.copy.server;
 
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import sk.upjs.kopr.copy.FileInfo;
 import sk.upjs.kopr.exceptions.DirectoryNotFoundException;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class Server {
@@ -26,12 +27,8 @@ public class Server {
     private AtomicBoolean isRunning = new AtomicBoolean();
 
     private BlockingQueue<FileInfo> filesToSend = new LinkedBlockingQueue<>();
-    private int totalFiles;
-    private long totalLength;
-
-    private List<File> allFiles;
-    private int allFilesCount;
-    private long allFileSize;
+    private AtomicInteger totalFiles = new AtomicInteger();
+    private AtomicLong totalLength = new AtomicLong();
 
     private ExecutorService executor;
 
@@ -53,24 +50,11 @@ public class Server {
         } finally {
             deleteProgressFile();
             try {
-                clearAllVariables();
                 reconnect();
             } catch (InterruptedException e) {
                 log.error("Error while sending files");
             }
         }
-    }
-
-    private void clearAllVariables() {
-        sockets = new ArrayList<>();
-        isRunning = new AtomicBoolean(false);
-        filesToSend = new LinkedBlockingQueue<>();
-        for (File file : allFiles) {
-            filesToSend.add(new FileInfo(file.getAbsolutePath(), 0L, file.length()));
-        }
-        totalFiles = allFilesCount;
-        totalLength = allFileSize;
-
     }
 
     public void connect() {
@@ -93,28 +77,41 @@ public class Server {
 
             props.setNumberOfSockets(ois.readInt());
 
-            oos.writeInt(allFilesCount);
+            oos.writeInt(totalFiles.get());
             oos.flush();
 
-            oos.writeLong(allFileSize);
+            oos.writeLong(totalLength.get());
             oos.flush();
 
             String command = ois.readUTF();
+            filesToSend = loadProgress().size() > 0 ? loadProgress() : filesToSend;
+            totalLength.set(filesToSend.stream().mapToLong(f -> f.size - f.offset).sum());
+            totalFiles.set(filesToSend.size());
+
             if ("RESUME".equals(command)) {
                 filesToSend = (BlockingQueue<FileInfo>) ois.readObject();
-                new File("client_progress.obj").delete();
+
+                oos.writeUTF("DELETE CLIENT PROGRESS");
+                oos.flush();
             } else if ("START".equals(command)) {
-                oos.writeInt(totalFiles);
-                oos.writeLong(totalLength);
+                oos.writeInt(totalFiles.get());
+                oos.writeLong(totalLength.get());
                 oos.writeObject(filesToSend);
+                oos.flush();
+            }
+            if(ois.readUTF().equals("DELETE SERVER PROGRESS")){
+                new File("server_progress.obj").delete();
+                log.info("Server progress was deleted");
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-
     private void sendFiles() throws InterruptedException {
+        log.info("Remaining files to send: " + totalFiles);
+        log.info("Remaining bytes to send: " + totalLength);
+
         CountDownLatch latch = new CountDownLatch(sockets.size());
         executor = Executors.newFixedThreadPool(sockets.size());
 
@@ -135,7 +132,7 @@ public class Server {
             if (flag) {
                 log.error("Client was disconnected.");
                 reconnect();
-                executor.shutdownNow();
+                executor.shutdown();
                 return;
             }
 
@@ -158,32 +155,23 @@ public class Server {
             throw new DirectoryNotFoundException(directory);
         }
 
-        allFiles = Searcher.search(directory);
-        allFilesCount = allFiles.size();
-        allFileSize = allFiles.stream()
-                .mapToLong(File::length)
-                .sum();
-
-        try {
-            filesToSend = loadProgress();
-            totalLength = 0;
-            if (filesToSend.size() > 0) {
-                filesToSend.forEach(file -> totalLength += file.size - file.offset);
-            } else {
-                for (File file : allFiles) {
-                    totalLength += file.length();
-                    filesToSend.add(new FileInfo(file.getAbsolutePath(), 0L, file.length()));
-                }
-            }
-            totalFiles = filesToSend.size();
-
-            log.info("Searching ended. Found " + allFilesCount + " files");
-            log.info("Remaining files to send: " + totalFiles);
-            log.info("Remaining bytes to send: " + totalLength);
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (File file : Searcher.search(directory)){
+            filesToSend.add(new FileInfo(file.getAbsolutePath(),0l,file.length()));
+            totalLength.addAndGet(file.length());
+            totalFiles.addAndGet(1);
         }
-        new Pair<>(totalFiles, totalLength);
+
+        log.info("Searching ended. Found " + totalFiles + " files");
+    }
+
+    private void asda(){
+        filesToSend = loadProgress();
+        totalLength.set(0);
+        if (filesToSend.size() > 0) {
+            filesToSend.forEach(file -> totalLength.addAndGet(file.size - file.offset));
+        } else {
+        }
+        totalFiles.set(filesToSend.size());
     }
 
     public synchronized void reconnect() throws InterruptedException {
@@ -191,12 +179,6 @@ public class Server {
 
         isRunning.set(true);
         executor.shutdown();
-
-        totalLength = 0;
-        if (filesToSend.size() > 0) {
-            filesToSend.forEach(file -> totalLength += file.size - file.offset);
-        }
-        totalFiles = filesToSend.size();
 
         managingConnection();
         connectClients();
@@ -224,6 +206,7 @@ public class Server {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static synchronized BlockingQueue<FileInfo> loadProgress() {
         File progressFile = new File("server_progress.obj");
 

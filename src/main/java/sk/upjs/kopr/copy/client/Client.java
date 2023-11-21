@@ -41,11 +41,10 @@ public class Client implements Runnable {
         this.finishProperty = finishProperty;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         log.info("Client started");
-        files = loadProgress();
-
         try {
             Socket managingSocket = getManagingSocket();
             if (managingSocket == null) {
@@ -66,11 +65,18 @@ public class Client implements Runnable {
             runLater(() -> allFileCountProperty.set(allFilesCount));
             runLater(() -> allFileSizeProperty.set(allFileSize));
 
+            files = loadProgress();
             if (files.size() > 0) {
+
                 log.info("RESUME copying");
                 oos.writeUTF("RESUME");
                 oos.writeObject(files);
                 oos.flush();
+
+                if (ois.readUTF().equals("DELETE CLIENT PROGRESS")) {
+                    new File("client_progress.obj").delete();
+                    log.info("Client progress was deleted");
+                }
             } else {
                 log.info("START copying");
                 oos.writeUTF("START");
@@ -78,6 +84,7 @@ public class Client implements Runnable {
 
                 totalFiles = ois.readInt();
                 totalLength = ois.readLong();
+
                 files = (BlockingQueue<FileInfo>) ois.readObject();
 
                 runLater(() -> fileCountProgressProperty.set(allFilesCount - totalFiles));
@@ -85,8 +92,9 @@ public class Client implements Runnable {
 
                 createDirectoriesAndFile(files);
             }
-            new File("server_progress.obj").delete();
-            System.out.println(files);
+            oos.writeUTF("DELETE SERVER PROGRESS");
+            oos.flush();
+
             receiveFiles();
             runLater(() -> finishProperty.set(true));
         } catch (InterruptedException e) {
@@ -153,6 +161,7 @@ public class Client implements Runnable {
         try {
             for (Future<Integer> future : futures) {
                 if (future.get() == -1) {
+                    log.info("Total downloaded " + fileSizeProgressProperty.get());
                     run();
                     executor.shutdownNow();
                     return;
@@ -174,6 +183,7 @@ public class Client implements Runnable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static synchronized BlockingQueue<FileInfo> loadProgress() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("client_progress.obj"))) {
             return (BlockingQueue<FileInfo>) ois.readObject();

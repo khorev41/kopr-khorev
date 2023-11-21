@@ -4,26 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="Added ProgressBars">
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/exceptions/DirectoryNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/ThreadSafeLong.java" afterDir="false" />
+    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="added my custom LongProperty class with listener">
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/Starter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/ClientLauncher.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/FileInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/ClientLauncher.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/ServerLauncher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/ServerLauncher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FilePathChanger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FilePathChanger.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FileSearcherTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/FileSearcherTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/Searcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/tools/Searcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sk/upjs/kopr/main.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sk/upjs/kopr/main.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +29,7 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -66,10 +58,12 @@
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -84,7 +78,7 @@
       <recent name="sk.upjs.kopr" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.ClientLauncher">
+  <component name="RunManager" selected="Application.ServerLauncher">
     <configuration name="ClientLauncher" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="sk.upjs.kopr.ClientLauncher" />
       <module name="kopr" />
@@ -113,8 +107,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.ClientLauncher" />
         <item itemvalue="Application.ServerLauncher" />
+        <item itemvalue="Application.ClientLauncher" />
       </list>
     </recent_temporary>
   </component>
@@ -142,7 +136,9 @@
       <workItem from="1699722698661" duration="643000" />
       <workItem from="1699880404291" duration="681000" />
       <workItem from="1699891190954" duration="39000" />
-      <workItem from="1699990339111" duration="2395000" />
+      <workItem from="1699990339111" duration="2717000" />
+      <workItem from="1700480117601" duration="1231000" />
+      <workItem from="1700594005687" duration="7052000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1698701397006</created>
@@ -158,15 +154,34 @@
       <option name="project" value="LOCAL" />
       <updated>1698923002648</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added my custom LongProperty class with listener">
+      <created>1699992820582</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1699992820582</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="initial commit" />
     <MESSAGE value="Added ProgressBars" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added ProgressBars" />
+    <MESSAGE value="added my custom LongProperty class with listener" />
+    <option name="LAST_COMMIT_MESSAGE" value="added my custom LongProperty class with listener" />
   </component>
 </project>

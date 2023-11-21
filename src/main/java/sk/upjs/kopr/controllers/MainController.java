@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import sk.upjs.kopr.copy.client.Client;
 import sk.upjs.kopr.tools.PropertiesManager;
@@ -30,6 +31,8 @@ public class MainController {
     private final ThreadSafeLong allFileSize = new ThreadSafeLong();
 
     private final BooleanProperty finishProperty = new SimpleBooleanProperty();
+
+    private ExecutorService executor;
 
     @FXML
     private Label copyingFinishedLabel;
@@ -57,54 +60,53 @@ public class MainController {
     private TextField toSaveTextField;
 
 
+
     @FXML
     void initialize() {
         directoryTextField.setText(props.getDirectory());
         toSaveTextField.setText(props.getPathToSave());
         numberOfThreadsTextField.setText(Runtime.getRuntime().availableProcessors() + "");
-        if (checkFileExistence()){
+        if (checkFileExistence()) {
             startCopyButton.setText("Pokračovať v kopírovaní");
         }
-
         setListeners();
     }
 
     @FXML
     void onStartCopyButtonClick(MouseEvent event) {
+        startCopyButton.setDisable(true);
         props.setNumberOfSockets(Integer.parseInt(numberOfThreadsTextField.getText()));
         props.setPathToSave(toSaveTextField.getText());
 
-        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor = Executors.newFixedThreadPool(1);
 
         Runnable clientTask = new Client(fileSizeProgressProperty, fileCountProgressProperty, allFileCount, allFileSize, finishProperty);
         executor.submit(clientTask);
         executor.shutdown();
         createFile();
 
-
-
         startCopyButton.setText("Kopirovanie beži");
     }
 
     private void setListeners() {
 
-        fileCountProgressProperty.addListener(( oldValue, newValue) -> {
-            filesPercentLabel.setText((int) (((double)newValue / allFileCount.get()) * 100) + "%");
-            filesSentProgressBar.setProgress(((double)newValue / allFileCount.get()));
+        fileCountProgressProperty.addListener((oldValue, newValue) -> {
+            filesPercentLabel.setText((int) (((double) newValue / allFileCount.get()) * 100) + "%");
+            filesSentProgressBar.setProgress(((double) newValue / allFileCount.get()));
         });
 
-        fileSizeProgressProperty.addListener(( oldValue, newValue) -> {
-            filesizePercentLabel.setText((int) ( (double) newValue / (1024 * 1024)) + "/" + allFileSize.get() / (1024 * 1024) + " MB");
+        fileSizeProgressProperty.addListener((oldValue, newValue) -> {
+            filesizePercentLabel.setText((int) ((double) newValue / (1024 * 1024)) + "/" + allFileSize.get() / (1024 * 1024) + " MB");
             bytesSentProgressBar.setProgress((double) newValue / allFileSize.get());
         });
 
-        allFileSize.addListener(( oldValue, newValue) -> filesizePercentLabel.setText(0 / (1024 * 1024) + "/" + (double)newValue/ (1024 * 1024) + " MB"));
-        allFileCount.addListener((oldValue, newValue) -> filesPercentLabel.setText(((0 / (double) newValue) * 100) + "%"));
+        allFileSize.addListener((oldValue, newValue) -> filesizePercentLabel.setText(0 / (1024 * 1024) + "/" + newValue / (1024 * 1024) + " MB"));
+        allFileCount.addListener((oldValue, newValue) -> filesPercentLabel.setText(0 + "%"));
 
         finishProperty.addListener((observable, oldValue, newValue) -> {
             deleteFile();
             startCopyButton.setText("Začať kopírovanie");
-            startCopyButton.setDisable(true);
+            log.info("Copying ended successfully");
             copyingFinishedLabel.setVisible(true);
         });
     }
@@ -116,14 +118,16 @@ public class MainController {
 
     public static void createFile() {
         File file = new File("wasFinished.txt");
-        try {
-            if (file.createNewFile()) {
-                System.out.println("File created successfully.");
-            } else {
-                System.out.println("File already exists.");
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    System.out.println("File created successfully.");
+                } else {
+                    System.out.println("File already exists.");
+                }
+            } catch (IOException e) {
+                System.err.println("An error occurred while creating the file: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("An error occurred while creating the file: " + e.getMessage());
         }
     }
 

@@ -14,19 +14,22 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"));
-    	MainController controller = new MainController();
-		fxmlLoader.setController(controller);
-		Parent parent = fxmlLoader.load();
-		Scene scene = new Scene(parent);
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"));
+        MainController controller = new MainController();
+        fxmlLoader.setController(controller);
+        Parent parent = fxmlLoader.load();
+        Scene scene = new Scene(parent);
 
-		stage.setOnCloseRequest(e -> Platform.exit());
+        stage.setOnCloseRequest(e -> {
+            e.consume();
+            stage.close();
+        });
 
-		stage.setMinWidth(380);
-		stage.setMinHeight(300);
-		stage.setScene(scene);
-		stage.setTitle("Multi-thread copy");
-		stage.show();
+        stage.setMinWidth(380);
+        stage.setMinHeight(300);
+        stage.setScene(scene);
+        stage.setTitle("Multi-thread copy");
+        stage.show();
     }
 
 
