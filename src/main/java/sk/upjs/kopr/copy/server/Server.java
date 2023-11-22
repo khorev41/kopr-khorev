@@ -77,10 +77,21 @@ public class Server {
 
             props.setNumberOfSockets(ois.readInt());
 
-            oos.writeInt(totalFiles.get());
+            File directory = new File(props.getDirectory());
+            if (!directory.exists() || !directory.isDirectory()) {
+                throw new DirectoryNotFoundException(directory);
+            }
+            long globalTotalFileSize = 0;
+            int globalTotalFiles = 0;
+            for (File file : Searcher.search(directory)){
+                globalTotalFileSize += file.length();
+                globalTotalFiles += 1;
+            }
+
+            oos.writeInt(globalTotalFiles);
             oos.flush();
 
-            oos.writeLong(totalLength.get());
+            oos.writeLong(globalTotalFileSize);
             oos.flush();
 
             String command = ois.readUTF();
@@ -104,6 +115,8 @@ public class Server {
                 log.info("Server progress was deleted");
             }
         } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (DirectoryNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -162,16 +175,6 @@ public class Server {
         }
 
         log.info("Searching ended. Found " + totalFiles + " files");
-    }
-
-    private void asda(){
-        filesToSend = loadProgress();
-        totalLength.set(0);
-        if (filesToSend.size() > 0) {
-            filesToSend.forEach(file -> totalLength.addAndGet(file.size - file.offset));
-        } else {
-        }
-        totalFiles.set(filesToSend.size());
     }
 
     public synchronized void reconnect() throws InterruptedException {
@@ -242,7 +245,7 @@ public class Server {
             }
         }
         if (executor != null) {
-            executor.shutdownNow();
+            executor.shutdown();
         }
     }
 

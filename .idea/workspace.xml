@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="added my custom LongProperty class with listener">
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+    <list default="true" id="3fb33c70-f012-4f99-b138-d7a0cb53a951" name="Changes" comment="final version&#10;corrected bug, with progress going more than 100%">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/controllers/MainController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/FileInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/client/FileReceiveTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/FileSendTask.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/upjs/kopr/copy/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,7 +131,8 @@
       <workItem from="1699891190954" duration="39000" />
       <workItem from="1699990339111" duration="2717000" />
       <workItem from="1700480117601" duration="1231000" />
-      <workItem from="1700594005687" duration="7052000" />
+      <workItem from="1700594005687" duration="7205000" />
+      <workItem from="1700641891805" duration="1558000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1698701397006</created>
@@ -161,7 +155,14 @@
       <option name="project" value="LOCAL" />
       <updated>1699992820582</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="final version&#10;corrected bug, with progress going more than 100%">
+      <created>1700601490344</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1700601490344</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -182,6 +183,7 @@
     <MESSAGE value="initial commit" />
     <MESSAGE value="Added ProgressBars" />
     <MESSAGE value="added my custom LongProperty class with listener" />
-    <option name="LAST_COMMIT_MESSAGE" value="added my custom LongProperty class with listener" />
+    <MESSAGE value="final version&#10;corrected bug, with progress going more than 100%" />
+    <option name="LAST_COMMIT_MESSAGE" value="final version&#10;corrected bug, with progress going more than 100%" />
   </component>
 </project>

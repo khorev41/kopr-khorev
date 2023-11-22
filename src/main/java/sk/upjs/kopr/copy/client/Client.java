@@ -163,7 +163,7 @@ public class Client implements Runnable {
                 if (future.get() == -1) {
                     log.info("Total downloaded " + fileSizeProgressProperty.get());
                     run();
-                    executor.shutdownNow();
+                    executor.shutdown();
                     return;
                 }
             }
